@@ -36,6 +36,13 @@ router.get("/papers", validateQueryParams, (req, res) => {
   // - Call the database function to retrieve papers
   // - Return the result as JSON
   // - Status code: 200
+  filters.year = filters.year ? Number(filters.year) : undefined;
+  filters.published_in = filters.published_in || undefined;
+  filters.limit = Number(filters.limit);
+  filters.offset = Number(filters.offset);
+
+  const papers = db.getAllPapers(filters);
+  res.status(200).json(papers);
 });
 
 // ------------------------------------------------------------
@@ -51,6 +58,11 @@ router.get("/papers/:id", validateId, (req, res) => {
   //     { "error": "Paper not found" }
   // - If found, return the paper as JSON
   // - Status code: 200
+  const paper = db.getPaperById(Number(req.params.id));
+  if (!paper) {
+    return res.status(404).json({ error: "Paper not found" });
+  }
+  res.status(200).json(paper);
 });
 
 // ------------------------------------------------------------
@@ -63,12 +75,18 @@ router.post("/papers", (req, res) => {
   if (errors.length > 0) {
     // TODO:
     // - Return status 400 with validation error information
+    return res.status(400).json({
+      error: "Validation Error",
+      messages: errors,
+    });
   }
 
   // TODO:
   // - Create a new paper using the database
   // - Return the created paper as JSON
   // - Status code: 201
+  const newPaper = db.createPaper(req.body);
+  res.status(201).json(newPaper);
 });
 
 // ------------------------------------------------------------
@@ -84,6 +102,10 @@ router.put("/papers/:id", validateId, (req, res) => {
   if (errors.length > 0) {
     // TODO:
     // - Return status 400 with validation error information
+    return res.status(400).json({
+      error: "Validation Error",
+      messages: errors,
+    });
   }
 
   // TODO:
@@ -93,6 +115,13 @@ router.put("/papers/:id", validateId, (req, res) => {
   //     { "error": "Paper not found" }
   // - If updated, return the updated paper as JSON
   // - Status code: 200
+  const paper = db.getPaperById(Number(req.params.id));
+  if (!paper) {
+    return res.status(404).json({ error: "Paper not found" });
+  }
+
+  const updatedPaper = db.updatePaper(Number(req.params.id), req.body);
+  res.status(200).json(updatedPaper);
 });
 
 // ------------------------------------------------------------
@@ -108,6 +137,13 @@ router.delete("/papers/:id", validateId, (req, res) => {
   //     { "error": "Paper not found" }
   // - If found, delete it
   // - Return status 204 with an empty body
+  const paper = db.getPaperById(Number(req.params.id));
+  if (!paper) {
+    return res.status(404).json({ error: "Paper not found" });
+  }
+
+  db.deletePaper(Number(req.params.id));
+  res.status(204).send();
 });
 
 module.exports = router;
