@@ -23,6 +23,18 @@ console.log("Opened SQLite database");
 // You should execute a CREATE TABLE IF NOT EXISTS statement.
 // ------------------------------------------------------------
 
+db.prepare(`
+  CREATE TABLE IF NOT EXISTS papers (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      authors TEXT NOT NULL,
+      published_in TEXT NOT NULL,
+      year INTEGER NOT NULL CHECK (year > 1900),
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`).run();
+
 // ------------------------------------------------------------
 // Database operations
 //
@@ -49,6 +61,12 @@ const dbOperations = {
   // ----------------------------------------------------------
   createPaper: (paper) => {
     // TODO: implement
+    const stmt = db.prepare(`
+      INSERT INTO papers (title, authors, published_in, year)
+      VALUES (?, ?, ?, ?)
+    `);
+    const info = stmt.run(paper.title, paper.authors, paper.published_in, paper.year);
+    return dbOperations.getPaperById(info.lastInsertRowid);
   },
 
   // ----------------------------------------------------------
@@ -72,6 +90,26 @@ const dbOperations = {
   // ----------------------------------------------------------
   getAllPapers: (filters = {}) => {
     // TODO: implement
+    let query = "SELECT * FROM papers WHERE 1=1";
+    const params = [];
+
+    if (filters.year !== undefined) {
+      query += " AND year = ?";
+      params.push(filters.year);
+    }
+
+    if (filters.published_in !== undefined) {
+      query += " AND published_in LIKE ?";
+      params.push(`%${filters.published_in}%`);
+    }
+
+    query += " LIMIT ? OFFSET ?";
+    const limit = filters.limit !== undefined ? filters.limit : 10;
+    const offset = filters.offset !== undefined ? filters.offset : 0;
+    params.push(limit, offset);
+
+    const stmt = db.prepare(query);
+    return stmt.all(...params);
   },
 
   // ----------------------------------------------------------
@@ -91,6 +129,8 @@ const dbOperations = {
   // ----------------------------------------------------------
   getPaperById: (id) => {
     // TODO: implement
+    const stmt = db.prepare("SELECT * FROM papers WHERE id = ?");
+    return stmt.get(id);
   },
 
   // ----------------------------------------------------------
@@ -113,6 +153,18 @@ const dbOperations = {
   // ----------------------------------------------------------
   updatePaper: (id, paper) => {
     // TODO: implement
+    const existing = dbOperations.getPaperById(id);
+    if (!existing) {
+      return null;
+    }
+
+    const stmt = db.prepare(`
+      UPDATE papers
+      SET title = ?, authors = ?, published_in = ?, year = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `);
+    stmt.run(paper.title, paper.authors, paper.published_in, paper.year, id);
+    return dbOperations.getPaperById(id);
   },
 
   // ----------------------------------------------------------
@@ -131,6 +183,8 @@ const dbOperations = {
   // ----------------------------------------------------------
   deletePaper: (id) => {
     // TODO: implement
+    const stmt = db.prepare("DELETE FROM papers WHERE id = ?");
+    stmt.run(id);
   },
 };
 
