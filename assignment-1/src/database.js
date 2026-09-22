@@ -42,6 +42,24 @@ db.prepare(`
 // Let unexpected errors propagate to Express' global error handler
 // (the provided errorHandler in middleware.js).
 // ------------------------------------------------------------
+
+const formatTimestamp = (ts) => {
+  if (!ts) return ts;
+  if (typeof ts === "string" && !ts.endsWith("Z")) {
+    return ts.replace(" ", "T") + ".000Z";
+  }
+  return ts;
+};
+
+const formatTimestamps = (paper) => {
+  if (!paper) return paper;
+  return {
+    ...paper,
+    created_at: formatTimestamp(paper.created_at),
+    updated_at: formatTimestamp(paper.updated_at),
+  };
+};
+
 const dbOperations = {
   // ----------------------------------------------------------
   // createPaper
@@ -109,7 +127,7 @@ const dbOperations = {
     params.push(limit, offset);
 
     const stmt = db.prepare(query);
-    return stmt.all(...params);
+    return stmt.all(...params).map(formatTimestamps);
   },
 
   // ----------------------------------------------------------
@@ -130,7 +148,7 @@ const dbOperations = {
   getPaperById: (id) => {
     // TODO: implement
     const stmt = db.prepare("SELECT * FROM papers WHERE id = ?");
-    return stmt.get(id);
+    return formatTimestamps(stmt.get(id));
   },
 
   // ----------------------------------------------------------
