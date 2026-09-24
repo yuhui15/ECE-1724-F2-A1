@@ -4,6 +4,16 @@ Choose one concrete part of the assignment.
  
 Briefly describe your planned approach, a technical concern,
 or an uncertainty you expect to work through.
+
+For the database side of things, I plan to use `better-sqlite3` to do the operations corresponding to the four funtions listed below.
+
+| Function / Operation | SQL Statement |
+| :--- | :--- |
+| **`createPaper`** | `INSERT INTO papers (title, authors, published_in, year) VALUES (?, ?, ?, ?)` |
+| **`getAllPapers`** | `SELECT * FROM papers WHERE 1=1 [AND year = ?] [AND published_in LIKE ?] LIMIT ? OFFSET ?` |
+| **`getPaperById`** | `SELECT * FROM papers WHERE id = ?` |
+| **`updatePaper`** | `UPDATE papers SET title = ?, authors = ?, published_in = ?, year = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?` |
+| **`deletePaper`** | `DELETE FROM papers WHERE id = ?` |
  
 ## Q2: Did you use AI?
  
@@ -13,9 +23,12 @@ or an uncertainty you expect to work through.
     or help with small parts of the implementation.
   - If AI directly influenced your code, identify the relevant
     file, component, function, or configuration where practical.
- 
+
 - If NO:
   - Write "No AI used."
+
+- YES
+  - AI was used to help break down the project's overall tasks, understand the project's file architecture, and clearly identify which specific files and components needed implementation (such as completing `src/database.js`, `src/routes.js`, and `src/middleware.js`). 
  
 ## Q3: (Only if you used AI)
  
@@ -26,3 +39,7 @@ Briefly explain:
 - What the AI suggested, explained, or helped identify
 - What you did with that input
 - How you verified, modified, or rejected it
+
+- **What the AI suggested:** AI found that SQLite's default timestamp format didn't match the test suite's ISO 8601 regex requirements.
+- **What you did with that input:** I Added several lines in `src/database.js` to adjust the timestamp strings right when querying data.
+- **How you verified:** I Ran the tests again and saw that they all passed.
