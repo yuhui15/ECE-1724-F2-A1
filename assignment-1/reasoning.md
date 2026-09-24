@@ -28,7 +28,7 @@ For the database side of things, I plan to use `better-sqlite3` to do the operat
   - Write "No AI used."
 
 - YES
-  - AI was used to help break down the project's overall tasks, understand the project's file architecture, and clearly identify which specific files and components needed implementation (such as completing `src/database.js`, `src/routes.js`, and `src/middleware.js`). 
+  - I use AI to separate the project's overall tasks and understand the project's file architecture. Finally, it clearly identify which specific files and components that I need to implement (such as completing `src/database.js`, `src/routes.js`, and `src/middleware.js`). 
  
 ## Q3: (Only if you used AI)
  
